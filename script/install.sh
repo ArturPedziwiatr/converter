@@ -15,7 +15,6 @@ cd gocesiumtiler
 
 go env -w CGO_ENABLED=1
 go build
-bash ./gocesiumtiler -help
 
 wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 
@@ -23,5 +22,7 @@ chmod +x ~/miniconda.sh
 bash ~/miniconda.sh -b -p $HOME/miniconda
 rm ~/miniconda.sh
 conda create -n app_env -c conda-forge entwine
-conda run -n app_env /bin/bash -c
-pip install -r requirements.txt
+# conda run -n app_env /bin/bash -c
+# cd ..
+
+# pip install -r ./requirements.txt

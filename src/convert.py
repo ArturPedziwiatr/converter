@@ -33,7 +33,7 @@ class Converter:
         try:    
             subprocess.run(
                 [
-                    './src/gocesiumtiler',
+                    '/opt/app/gocesiumtiler/gocesiumtiler',
                     '-i', input,
                     '-o', output,
                     '-e', epsg

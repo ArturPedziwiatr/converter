@@ -1,0 +1,6 @@
+!src/assets
+!src/gocesiumtiler
+!__pycache__
+!*/**/__pycache__
+!venv/
+!src/tmp/
