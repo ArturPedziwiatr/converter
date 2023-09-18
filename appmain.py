@@ -12,6 +12,10 @@ from src.error import Throw, Error
 app = FastAPI()
 tmpPath = './src/tmp'
 
+@app.get("/")
+async def hello():
+    return {"hello": "chuj ci na cyce"}
+
 @app.post("/v1/laz-to-tiles")
 async def lazToTiles(file: UploadFile):
     try:
