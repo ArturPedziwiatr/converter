@@ -19,7 +19,7 @@ class Converter:
         file = laspy.read(path)
         file = laspy.convert(file)
         print(fileName)
-        output = './src/tmp/{}.las'.format(fileName)
+        output = '/opt/app/src/tmp/{}.las'.format(fileName)
         file.write(output)
         console.log("Finished converting")
         return output
@@ -29,7 +29,7 @@ class Converter:
         console.log("Start converting .laz file to 3DTiles")
         subprocess.run(
             [
-                './src/gocesiumtiler',
+                '/opt/app/gocesiumtiler/gocesiumtiler',
                 '-i', input,
                 '-o', output,
                 '-e', epsg
@@ -37,7 +37,7 @@ class Converter:
             check=True
         )
         console.log("Finished converting")
-        return '{}/{}'.format(output,os.path.basename(input).split('.')[0])
+        return '/opt/app/{}/{}'.format(output,os.path.basename(input).split('.')[0])
 
 
 class DataExtractor:
