@@ -1,2 +1,3 @@
-ls -Rla /opt/app/
-uvicorn appmain:app --reload --port 8005
+source ~/venv/bin/activate
+cd /opt/app
+uvicorn appmain:app --host 0.0.0.0 --port 80
