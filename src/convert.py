@@ -4,7 +4,7 @@ import re
 import laspy
 import json
 from src.logger import console
-from src.error import Throw, Error
+from src.error import Throw, WrongEpsg
 
 class Converter:
     @staticmethod
@@ -51,7 +51,7 @@ class DataExtractor:
             ).stdout
         )['summary']['metadata']['srs']['wkt']
         if not epsgLoader:
-            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
+            raise WrongEpsg('getEPSG')
         matches = list(re.finditer(
             r'(?<=EPSG.{3})\d+',
             epsgLoader
@@ -59,7 +59,7 @@ class DataExtractor:
         if matches:
             epsg = matches[-1].group()
         if not epsg:
-            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
+            raise WrongEpsg('getEPSG')
         return epsg
 
 
