@@ -1,13 +1,10 @@
-import sys
 import os
 import subprocess
 import re
 import laspy
-import zipfile
-
-from typing import Union
-from fastapi import File
+import json
 from src.logger import console
+from src.error import Throw, Error
 
 class Converter:
     @staticmethod
@@ -30,35 +27,39 @@ class Converter:
     @staticmethod
     def lasTo3DTiles(input: str, output: str, epsg: str) -> str:
         console.log("Start converting .laz file to 3DTiles")
-        try:    
-            subprocess.run(
-                [
-                    '/opt/app/gocesiumtiler/gocesiumtiler',
-                    '-i', input,
-                    '-o', output,
-                    '-e', epsg
-                ],
-                check=True
-            )
-            return '{}/{}'.format(output,os.path.basename(input).split('.')[0])
-        except subprocess.CalledProcessError as e:
-            console.error(f"Error with gocesiumtiler: {e}")
+        subprocess.run(
+            [
+                './src/gocesiumtiler',
+                '-i', input,
+                '-o', output,
+                '-e', epsg
+            ],
+            check=True
+        )
         console.log("Finished converting")
+        return '/opt/app/{}/{}'.format(output,os.path.basename(input).split('.')[0])
 
 
 class DataExtractor:
     @staticmethod
     def getEPSG(input: str) -> str:
         console.log("Get EPSG from file")
-        epsg: str
-        try:
-            epsg = re.search(
-                r'(?<=EPSG:)\d+',
-                Converter.tupleToStr(
-                    subprocess.Popen(['entwine', 'info', input], stdout=subprocess.PIPE).communicate()
-                )
-            ).group()
-            console.log("EPSG: {} has been download".format(epsg))
-            return epsg
-        except  subprocess.CalledProcessError as e:
-            console.error("Error with entwine: {}".format(e))
+        epsgLoader = json.loads(
+            subprocess.run(
+                ['pdal', 'info', input, '--summary'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            ).stdout
+        )['summary']['metadata']['srs']['wkt']
+        if not epsgLoader:
+            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
+        matches = list(re.finditer(
+            r'(?<=EPSG.{3})\d+',
+            epsgLoader
+        ))
+        if matches:
+            epsg = matches[-1].group()
+        if not epsg:
+            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
+        return epsg
+
+
