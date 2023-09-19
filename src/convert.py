@@ -19,7 +19,7 @@ class Converter:
         file = laspy.read(path)
         file = laspy.convert(file)
         print(fileName)
-        output = '/opt/app/src/tmp/{}.las'.format(fileName)
+        output = './src/tmp/{}.las'.format(fileName)
         file.write(output)
         console.log("Finished converting")
         return output
@@ -29,7 +29,7 @@ class Converter:
         console.log("Start converting .laz file to 3DTiles")
         subprocess.run(
             [
-                '/opt/app/gocesiumtiler/gocesiumtiler',
+                './src/gocesiumtiler',
                 '-i', input,
                 '-o', output,
                 '-e', epsg
@@ -51,7 +51,7 @@ class DataExtractor:
             ).stdout
         )['summary']['metadata']['srs']['wkt']
         if not epsgLoader:
-            Throw(Error.wrongEpsg, 'Cannot find EPSG', 'getEPSG')
+            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
         matches = list(re.finditer(
             r'(?<=EPSG.{3})\d+',
             epsgLoader
@@ -59,7 +59,7 @@ class DataExtractor:
         if matches:
             epsg = matches[-1].group()
         if not epsg:
-            Throw(Error.wrongEpsg, 'Cannot find EPSG', 'getEPSG')
+            raise Throw(Error.wrongEpsg(), 'Cannot find EPSG', 'getEPSG')
         return epsg
 
 

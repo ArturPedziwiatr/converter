@@ -24,7 +24,7 @@ async def lazToTiles(file: UploadFile):
         os.mkdir(tmpPath)
         filename = file.filename
         if type( filename ) is not str:
-            Throw(Error.notDefined('Name of file'),context='lazToTiles')
+            raise Throw(Error.notDefined('Name of file'),context='lazToTiles')
 
         filePath = '{}/{}'.format(tmpPath,filename)
         with open(filePath, '+wb') as f:
@@ -51,9 +51,7 @@ async def lazToTiles(file: UploadFile):
 
         return FileResponse('{}.zip'.format(fileZip))
     except Throw as t:
-        return JSONResponse(content={
-                *t.error
-            })
+        return JSONResponse(content={ t.error })
     except Exception as e:
         console.error('An error occurred: {}'.format(e))
         return JSONResponse(content={
