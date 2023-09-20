@@ -13,7 +13,11 @@ outputPath = 'output'
 
 @app.get("/")
 async def hello():
-    return {"hello": "world"}
+    return {
+        "Servis": "working properly",
+        "active": True
+    }
+    
 
 @app.post("/v1/laz-to-tiles")
 async def lazToTiles(
