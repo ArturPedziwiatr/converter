@@ -1,0 +1,17 @@
+version: '3'
+services:
+  converter:
+    build: .
+    image: converter
+    container_name: converter
+    restart: unless-stopped
+    volumes:
+      - ./output:/opt/app/output
+    ports:
+      - '8005:80'
+    networks:
+      - converter
+
+networks:
+  converter:
+    driver: bridge
