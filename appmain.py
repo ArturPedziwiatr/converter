@@ -1,55 +1,49 @@
 import os
-import re
-import subprocess
-import shutil
+import uuid
 
-from fastapi import FastAPI, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, UploadFile, Form
+from fastapi.responses import JSONResponse, StreamingResponse
 from src.convert import Converter, DataExtractor
 from src.logger import console
-from src.error import NotDefined, Throw
+from src.error import NotDefined, Throw, WrongExtension
 
 app = FastAPI()
 tmpPath = './src/tmp'
+outputPath = 'output'
 
 @app.get("/")
 async def hello():
     return {"hello": "world"}
 
 @app.post("/v1/laz-to-tiles")
-async def lazToTiles(file: UploadFile):
+async def lazToTiles(
+    file: UploadFile,
+    filename: str = Form(...),
+    mimeType: str = Form(...)
+):
     try:
-        if os.path.exists(tmpPath):
-            shutil.rmtree(tmpPath)
-        os.mkdir(tmpPath)
-        filename = file.filename
+        uuid4 = uuid.uuid4()
+        if not os.path.exists(tmpPath):
+            os.mkdir(tmpPath)
+
         if type( filename ) is not str:
             raise NotDefined('lazToTiles', 'Name of file is not')
+        if (filename.find('.laz') < 0 & filename.find('.las') < 0):
+            raise WrongExtension('lazToTiles', 'Expected file with (.laz|.las) extension')
 
-        filePath = '{}/{}'.format(tmpPath,filename)
+
+        filePath = '{}/{}.{}'.format(tmpPath, uuid4, filename.split('.')[-1])
         with open(filePath, '+wb') as f:
             f.write(await file.read())
+
         
         if filename.find('.laz') > -1:
-            filePath = Converter.lazToLas(filePath)
+            filePath = Converter.lazToLas(filePath, True)
 
         epsg = DataExtractor.getEPSG(filePath)
-        folderResult = Converter.lasTo3DTiles(filePath, tmpPath, epsg)
-        if os.path.exists(filePath):
-            os.remove(filePath)
+        Converter.lasTo3DTiles(filePath, outputPath, epsg, True)
 
-        fileZip =  '{}/{}'.format(tmpPath, filename.split('.')[0])
-        shutil.make_archive(
-            fileZip,
-            'zip',
-            folderResult
-        )
-
-        if os.path.exists(folderResult):
-            shutil.rmtree(folderResult)
-
-
-        return FileResponse('{}.zip'.format(fileZip))
+        return uuid4
     except Throw as err:
         return JSONResponse(content={
             'name': err.name,

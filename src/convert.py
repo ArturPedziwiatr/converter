@@ -2,6 +2,7 @@ import os
 import subprocess
 import re
 import laspy
+import shutil
 import json
 from src.logger import console
 from src.error import Throw, WrongEpsg
@@ -11,21 +12,34 @@ class Converter:
     def tupleToStr(tup):
         st = ''.join(map(str, tup))
         return st
+    
+    @staticmethod
+    def dirToZip(path: str, rm:bool = False) -> str:
+        console.log("Start compressing to zip")
+        shutil.make_archive(
+            path,
+            'zip',
+            path
+        )
+        if rm & os.path.exists(path):
+            shutil.rmtree(path)
+        console.log("Compressing has been finished")
+        return '{}.zip'.format(path)
 
     @staticmethod
-    def lazToLas(path: str) -> str:
+    def lazToLas(path: str, rm: bool = False) -> str:
         console.log("Start converting .laz file to .las")
-        fileName = os.path.basename(path).split('.')[0]
         file = laspy.read(path)
         file = laspy.convert(file)
-        print(fileName)
-        output = './src/tmp/{}.las'.format(fileName)
+        output = '{}.las'.format(os.path.splitext(path)[0])
         file.write(output)
+        if rm & os.path.exists(path):
+            os.remove(path)
         console.log("Finished converting")
         return output
 
     @staticmethod
-    def lasTo3DTiles(input: str, output: str, epsg: str) -> str:
+    def lasTo3DTiles(input: str, output: str, epsg: str, rm:bool = False) -> str:
         console.log("Start converting .laz file to 3DTiles")
         subprocess.run(
             [
@@ -36,9 +50,10 @@ class Converter:
             ],
             check=True
         )
+        if rm & os.path.exists(input):
+            os.remove(input)
         console.log("Finished converting")
-        return '/opt/app/{}/{}'.format(output,os.path.basename(input).split('.')[0])
-
+        return os.path.splitext(input)[0]
 
 class DataExtractor:
     @staticmethod
