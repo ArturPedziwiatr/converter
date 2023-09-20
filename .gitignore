@@ -1,6 +1,6 @@
 venv/
-src/tmp/
-log/*
-output/*
+/src/tmp/
+/log/*
+/output/*
 */**/__pycache__/
 __pycache__/
